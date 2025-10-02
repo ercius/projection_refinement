@@ -7,6 +7,8 @@ A python implemenation of the projection matching method (PMA) developed by the 
 To build the alignment package, first build the [tomo_TV reconstruction package](https://github.com/jtschwar/tomo_TV). Once the reconstruction package is available, we can build `tomoalign` with pip install:
 
 ```bash
+git clone https://github.com/jtschwar/projection_refinement.git
+cd projection_refinement
 pip install -e . 
 ```
 
