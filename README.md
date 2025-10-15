@@ -43,6 +43,7 @@ aligner.save('aligned.h5')
 ## References
 If you use `tomoalign` for your research, we would appreciate it if you cite to the following papers:
 
+- [Alignment methods for nanotomography with deep subpixel accuracy](https://opg.optica.org/oe/fulltext.cfm?uri=oe-27-25-36637)
 - [Real-time 3D analysis during electron tomography using tomviz](https://www.nature.com/articles/s41467-022-32046-0)
 - [Imaging 3D Chemistry at 1 nm resolution with fused multi-modal electron tomography](https://www.nature.com/articles/s41467-024-47558-0)
 
