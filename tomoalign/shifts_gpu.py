@@ -294,7 +294,7 @@ class shifts:
 		centerOut = np.floor(Nout/2) 
 		cenout_cen = centerOut - center
 
-		imout = cu.zeros( np.append(Nout, Nin[2]), dtype=type(img))
+		imout = cu.zeros( np.append(Nout, Nin[2]), dtype=img.dtype)
 
 		# import pdb; pdb.set_trace()
 		# xCrop = np.arange( np.maximum(cenout_cen[0],0), np.minimum(cenout_cen[0]+Nin[0],Nout[0]) )
