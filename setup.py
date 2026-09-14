@@ -6,6 +6,7 @@ Addapted from https://github.com/pypa/sampleproject
 # Always prefer setuptools over distutils
 from codecs import open
 from os import path
+import os
 import subprocess
 import sys
 
@@ -14,8 +15,25 @@ from setuptools import setup , find_packages
 # To use a consistent encoding
 here = path.abspath(path.dirname(__file__))
 
+def cupy_package_for_major_version(major_version):
+    if major_version >= 13:
+        return 'cupy-cuda13x'
+    elif major_version == 12:
+        return 'cupy-cuda12x>=12.0.0'
+    elif major_version == 11:
+        return 'cupy-cuda11x>=12.0.0'
+    return 'cupy>=12.0.0'
+
 def detect_cuda_version():
     """Detect CUDA version and return appropriate CuPy package."""
+    # Allow overriding detection (e.g. in Docker builds where the runtime
+    # image has no nvcc/nvidia-smi available at build time).
+    env_version = os.environ.get('CUDA_MAJOR_VERSION')
+    if env_version:
+        major_version = int(env_version)
+        print(f"CUDA_MAJOR_VERSION={major_version} set, installing {cupy_package_for_major_version(major_version)}")
+        return cupy_package_for_major_version(major_version)
+
     try:
         # Try to get CUDA version from nvidia-smi
         result = subprocess.run(['nvidia-smi'], capture_output=True, text=True, timeout=10)
