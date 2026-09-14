@@ -6,6 +6,7 @@ Addapted from https://github.com/pypa/sampleproject
 # Always prefer setuptools over distutils
 from codecs import open
 from os import path
+import os
 import subprocess
 import sys
 
@@ -14,8 +15,30 @@ from setuptools import setup , find_packages
 # To use a consistent encoding
 here = path.abspath(path.dirname(__file__))
 
+def cupy_package_for_major_version(major_version):
+    if major_version >= 13:
+        # cupy-cuda13x needs cudart headers at runtime for NVRTC-compiled
+        # kernels. nvidia-cuda-runtime is a ~3MB wheel with just the
+        # headers/small runtime libs -- avoid cupy's [ctk] extra, which
+        # pulls the entire CUDA Toolkit (nvcc, cuBLAS, cuSOLVER, ...) and
+        # balloons image size back up.
+        return ['cupy-cuda13x', 'nvidia-cuda-runtime']
+    elif major_version == 12:
+        return ['cupy-cuda12x>=12.0.0']
+    elif major_version == 11:
+        return ['cupy-cuda11x>=12.0.0']
+    return ['cupy>=12.0.0']
+
 def detect_cuda_version():
     """Detect CUDA version and return appropriate CuPy package."""
+    # Allow overriding detection (e.g. in Docker builds where the runtime
+    # image has no nvcc/nvidia-smi available at build time).
+    env_version = os.environ.get('CUDA_MAJOR_VERSION')
+    if env_version:
+        major_version = int(env_version)
+        print(f"CUDA_MAJOR_VERSION={major_version} set, installing {cupy_package_for_major_version(major_version)}")
+        return cupy_package_for_major_version(major_version)
+
     try:
         # Try to get CUDA version from nvidia-smi
         result = subprocess.run(['nvidia-smi'], capture_output=True, text=True, timeout=10)
@@ -25,16 +48,9 @@ def detect_cuda_version():
                 if 'CUDA Version:' in line:
                     version_str = line.split('CUDA Version:')[1].strip().split()[0]
                     major_version = int(version_str.split('.')[0])
-                    
-                    if major_version >= 12:
-                        print("Detected CUDA 12+, installing cupy-cuda12x")
-                        return 'cupy-cuda12x>=12.0.0'
-                    elif major_version == 11:
-                        print("Detected CUDA 11, installing cupy-cuda11x")
-                        return 'cupy-cuda11x>=12.0.0'
-                    else:
-                        print(f"Detected CUDA {major_version}, using generic cupy")
-                        return 'cupy>=12.0.0'
+
+                    print(f"Detected CUDA {major_version}, installing {cupy_package_for_major_version(major_version)}")
+                    return cupy_package_for_major_version(major_version)
     except (subprocess.TimeoutExpired, subprocess.CalledProcessError, FileNotFoundError, ValueError):
         pass
     
@@ -46,13 +62,9 @@ def detect_cuda_version():
                 if 'release' in line and 'V' in line:
                     version_str = line.split('V')[1].strip().split(',')[0]
                     major_version = int(version_str.split('.')[0])
-                    
-                    if major_version >= 12:
-                        print("Detected CUDA 12+ via nvcc, installing cupy-cuda12x")
-                        return 'cupy-cuda12x>=12.0.0'
-                    elif major_version == 11:
-                        print("Detected CUDA 11 via nvcc, installing cupy-cuda11x")
-                        return 'cupy-cuda11x>=12.0.0'
+
+                    print(f"Detected CUDA {major_version} via nvcc, installing {cupy_package_for_major_version(major_version)}")
+                    return cupy_package_for_major_version(major_version)
     except (subprocess.TimeoutExpired, subprocess.CalledProcessError, FileNotFoundError, ValueError):
         pass
     
@@ -74,7 +86,7 @@ base_requires = ['numpy', 'scipy', 'matplotlib', 'h5py>=3', 'tqdm', 'scikit-imag
 # Add CuPy if CUDA detected
 install_requires = base_requires.copy()
 if cuda_cupy_package:
-    install_requires.append(cuda_cupy_package)
+    install_requires.extend(cuda_cupy_package)
 
 # Setup extras_require
 extras_require = {
@@ -84,8 +96,9 @@ extras_require = {
 # Add GPU options for manual installation
 if not cuda_cupy_package:  # Only add these if auto-detection failed
     extras_require.update({
-        'cuda11': ['cupy-cuda11x>=12.0.0'],
-        'cuda12': ['cupy-cuda12x>=12.0.0']
+        'cuda11': cupy_package_for_major_version(11),
+        'cuda12': cupy_package_for_major_version(12),
+        'cuda13': cupy_package_for_major_version(13),
     })
 
 extras_require['all'] = list(set([item for sublist in extras_require.values() for item in sublist]))
