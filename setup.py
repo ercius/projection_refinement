@@ -25,9 +25,12 @@ def detect_cuda_version():
                 if 'CUDA Version:' in line:
                     version_str = line.split('CUDA Version:')[1].strip().split()[0]
                     major_version = int(version_str.split('.')[0])
-                    
-                    if major_version >= 12:
-                        print("Detected CUDA 12+, installing cupy-cuda12x")
+
+                    if major_version >= 13:
+                        print("Detected CUDA 13+, installing cupy-cuda13x")
+                        return 'cupy-cuda13x'
+                    elif major_version == 12:
+                        print("Detected CUDA 12, installing cupy-cuda12x")
                         return 'cupy-cuda12x>=12.0.0'
                     elif major_version == 11:
                         print("Detected CUDA 11, installing cupy-cuda11x")
@@ -46,9 +49,12 @@ def detect_cuda_version():
                 if 'release' in line and 'V' in line:
                     version_str = line.split('V')[1].strip().split(',')[0]
                     major_version = int(version_str.split('.')[0])
-                    
-                    if major_version >= 12:
-                        print("Detected CUDA 12+ via nvcc, installing cupy-cuda12x")
+
+                    if major_version >= 13:
+                        print("Detected CUDA 13+ via nvcc, installing cupy-cuda13x")
+                        return 'cupy-cuda13x'
+                    elif major_version == 12:
+                        print("Detected CUDA 12 via nvcc, installing cupy-cuda12x")
                         return 'cupy-cuda12x>=12.0.0'
                     elif major_version == 11:
                         print("Detected CUDA 11 via nvcc, installing cupy-cuda11x")
@@ -85,7 +91,8 @@ extras_require = {
 if not cuda_cupy_package:  # Only add these if auto-detection failed
     extras_require.update({
         'cuda11': ['cupy-cuda11x>=12.0.0'],
-        'cuda12': ['cupy-cuda12x>=12.0.0']
+        'cuda12': ['cupy-cuda12x>=12.0.0'],
+        'cuda13': ['cupy-cuda13x']
     })
 
 extras_require['all'] = list(set([item for sublist in extras_require.values() for item in sublist]))
