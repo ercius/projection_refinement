@@ -17,7 +17,7 @@ here = path.abspath(path.dirname(__file__))
 
 def cupy_package_for_major_version(major_version):
     if major_version >= 13:
-        return 'cupy-cuda13x'
+        return 'cupy-cuda13x[ctk]'
     elif major_version == 12:
         return 'cupy-cuda12x>=12.0.0'
     elif major_version == 11:
@@ -45,8 +45,8 @@ def detect_cuda_version():
                     major_version = int(version_str.split('.')[0])
 
                     if major_version >= 13:
-                        print("Detected CUDA 13+, installing cupy-cuda13x")
-                        return 'cupy-cuda13x'
+                        print("Detected CUDA 13+, installing cupy-cuda13x[ctk]")
+                        return 'cupy-cuda13x[ctk]'
                     elif major_version == 12:
                         print("Detected CUDA 12, installing cupy-cuda12x")
                         return 'cupy-cuda12x>=12.0.0'
@@ -69,8 +69,8 @@ def detect_cuda_version():
                     major_version = int(version_str.split('.')[0])
 
                     if major_version >= 13:
-                        print("Detected CUDA 13+ via nvcc, installing cupy-cuda13x")
-                        return 'cupy-cuda13x'
+                        print("Detected CUDA 13+ via nvcc, installing cupy-cuda13x[ctk]")
+                        return 'cupy-cuda13x[ctk]'
                     elif major_version == 12:
                         print("Detected CUDA 12 via nvcc, installing cupy-cuda12x")
                         return 'cupy-cuda12x>=12.0.0'
@@ -110,7 +110,7 @@ if not cuda_cupy_package:  # Only add these if auto-detection failed
     extras_require.update({
         'cuda11': ['cupy-cuda11x>=12.0.0'],
         'cuda12': ['cupy-cuda12x>=12.0.0'],
-        'cuda13': ['cupy-cuda13x']
+        'cuda13': ['cupy-cuda13x[ctk]']
     })
 
 extras_require['all'] = list(set([item for sublist in extras_require.values() for item in sublist]))
